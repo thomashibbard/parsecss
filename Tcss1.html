@@ -1,0 +1,101 @@
+<html>
+	<head>
+	<style id="styleRules">
+		div{
+			border: 3px double rgb(255, 10, 0);
+			background: url("http://i.ebayimg.com/00/s/MjI1WDMwMA==/z/aBIAAOSwPhdVKF~Q/$_35.JPG") 
+	        50% 150px no-repeat
+	        rgb(255, 212, 147)
+	        fixed border-box padding-box ;
+			width: 150px;
+			height: 150px;
+		}
+		span{
+			border: 4px solid red;
+			padding: 4px 4px 4px;
+			color: red;
+		}
+		#someSpan{
+			padding: 5px 5px;
+			border:  5px solid green;
+		}
+
+	</style>
+
+	</head>
+
+	<body>
+
+	<pre id="console"></pre>
+	<div id="cat">oaisdjfoas</div>
+	<span id="someSpan">oaisdjfioasdf</span>
+
+	</body>
+
+
+</html>
+
+
+<script type="text/javascript">
+//source: http://stackoverflow.com/a/10425344/1252748
+var toCamelCase = function(input){
+
+    return input.toLowerCase().replace(/-(.)/g, function(match, group1) {
+        return group1.toUpperCase();
+    });
+
+}
+
+var parsedStyleForCSS = function(cssString){
+    var el = document.createElement("span");
+    el.setAttribute("style", cssString);
+    //console.log(el.style)
+    return el.style; // CSSStyleDeclaration object
+};
+
+var rules = document.getElementById("styleRules").innerHTML.replace(/[\n\s]+/gm, " ").split("}");
+rules.splice(-1, 1);
+var rulesObj = {}, spl, currentRuleName, currentRuleVal;
+for (var i = 0; i < rules.length; i++){
+  rules[i].replace(/\n*/gm, " ")
+  rules[i] = rules[i].trim() + "}";
+  spl = rules[i].split("{")
+  currentRuleName = spl[0].trim();
+  currentRuleVal = spl[1].trim();
+  rulesObj[currentRuleName] = currentRuleVal.replace("}", "");
+}
+
+//get list of all granular properties
+var allGranularProps = [];
+for(var prop in document.createElement("div").style){
+  if (/(^background|border|padding|margin)(?!-).*?/g.test(prop)){
+     allGranularProps.push(prop);
+  }
+}
+
+console.log(allGranularProps);
+
+var parsedStyle, propsList;
+for (var cssProp in rulesObj){
+
+	parsedStyle = parsedStyleForCSS(rulesObj[cssProp]);
+	for (var i = 0; i < allGranularProps.length; i++){
+		if (parsedStyle[allGranularProps[i]]){
+			console.log("CSS selector: " + cssProp + "\t\t\t" + allGranularProps[i] + ": " + parsedStyle[allGranularProps[i]]);
+			document.querySelector(cssProp).style[allGranularProps[i]] = parsedStyle[allGranularProps[i]];
+		}
+
+	}
+}
+
+
+
+</script>
+
+
+
+
+
+
+
+

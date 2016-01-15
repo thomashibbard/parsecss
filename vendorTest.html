@@ -1,0 +1,34 @@
+<html>
+	<style>
+	html{
+		height: 10000px;
+	}
+	textarea{
+		height: 100%;
+		width: 350px;
+	}
+	</style>
+	<pre id="a">`Moz` prefixed props</pre>
+	<textarea id="b"></textarea>
+</html>
+
+<script>
+
+var el = document.getElementById("a"),
+	tx = document.getElementById("b");
+
+var st = el.style;
+
+for (var prop in st){
+
+	if (/webkit/i.test(prop) && !/-/i.test(prop)){
+		b.value += prop + "\n";
+	}else{
+		console.log(prop)
+	}
+
+}
+
+
+</script>
+

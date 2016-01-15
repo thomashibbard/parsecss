@@ -1,0 +1,336 @@
+
+<!DOCTYPE html>
+
+<html>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<head>
+
+
+	</head>
+
+	<body>
+
+		<table>
+			<tr>
+				<td>
+					<button id="processCSS">Parse CSS to longhand</button>
+				</td>
+				<td>
+
+					<div id="cat">some sample text in a div<p>a paragraph tag</p></div>
+					<span id="someSpan">more sample text</span>
+					<div class="">asdf</div>
+
+					<hr>
+
+					<div id="allShorthandProps">All properties</div>
+				</td>
+				<td>
+					<code>parsed CSS</code>
+					<pre id="parsedCSSTextarea"></pre>
+				</td>
+			</tr>
+		</table>
+		
+
+
+	</body>
+	<!--put style in script tag so that browser does not reder it
+		but its innerHTML can be accessed-->
+	<style type="text/css" id="styleRules">
+		div{
+			border: 3px 
+			double 
+			rgb(255, 10, 0);
+			background: url("http://i.ebayimg.com/00/s/MjI1WDMwMA==/z/aBIAAOSwPhdVKF~Q/$_35.JPG") 
+	        50% 150px no-repeat
+	        rgb(255, 212, 147)
+	        fixed border-box padding-box;
+			width: 150px;
+			height: 150px;
+		}
+		div p{
+			border: 1px dotted #44dd00;
+			font: italic bold 12px/30px Georgia, serif;
+		}
+		span{
+			border: 4px solid red;
+			padding: 4px 4px 4px;
+			color: red;
+		}
+		#someSpan{
+			padding: 5px 5px;
+			border:  5px solid green;
+			width: 150px;
+			height: 100px;
+			display: inline-block;
+		}
+		div#allShorthandProps{
+			margin: 1px 2em 4% 5px;
+			padding: 4em 2px;
+			font: italic normal 12px/30px Times, serif;
+			background: url("http://i.ebayimg.com/00/s/MjI1WDMwMA==/z/aBIAAOSwPhdVKF~Q/$_35.JPG")  
+		        50% 150px no-repeat
+		        rgb(250, 12, 15)
+		        fixed border-box padding-box;
+		    width:400px;
+		    height: 5em;
+		}
+		pre{
+			width: 100%;
+			height: 100%;
+			font-family: "menlo";
+  			font-size: 10px;
+		}
+		td{
+			vertical-align: top;
+		}
+
+	</style>
+
+</html>
+
+
+<script type="text/javascript">
+
+
+	/*POLYFILLS (ALL FROM MDN)*/
+
+
+	if (!document.querySelectorAll) {
+	  document.querySelectorAll = function (selectors) {
+	    var style = document.createElement('style'), elements = [], element;
+	    document.documentElement.firstChild.appendChild(style);
+	    document._qsa = [];
+	 
+	    style.styleSheet.cssText = selectors + '{x-qsa:expression(document._qsa && document._qsa.push(this))}';
+	    window.scrollBy(0, 0);
+	    style.parentNode.removeChild(style);
+	 
+	    while (document._qsa.length) {
+	      element = document._qsa.shift();
+	      element.style.removeAttribute('x-qsa');
+	      elements.push(element);
+	    }
+	    document._qsa = null;
+	    return elements;
+	  };
+	}
+	 
+	if (!document.querySelector) {
+	  document.querySelector = function (selectors) {
+	    var elements = document.querySelectorAll(selectors);
+	    return (elements.length) ? elements[0] : null;
+	  };
+	}
+
+	// Production steps of ECMA-262, Edition 5, 15.4.4.14
+	// Reference: http://es5.github.io/#x15.4.4.14
+	if (!Array.prototype.indexOf) {
+	  Array.prototype.indexOf = function(searchElement, fromIndex) {
+
+	    var k;
+
+	    // 1. Let O be the result of calling ToObject passing
+	    //    the this value as the argument.
+	    if (this == null) {
+	      throw new TypeError('"this" is null or not defined');
+	    }
+
+	    var O = Object(this);
+
+	    // 2. Let lenValue be the result of calling the Get
+	    //    internal method of O with the argument "length".
+	    // 3. Let len be ToUint32(lenValue).
+	    var len = O.length >>> 0;
+
+	    // 4. If len is 0, return -1.
+	    if (len === 0) {
+	      return -1;
+	    }
+
+	    // 5. If argument fromIndex was passed let n be
+	    //    ToInteger(fromIndex); else let n be 0.
+	    var n = +fromIndex || 0;
+
+	    if (Math.abs(n) === Infinity) {
+	      n = 0;
+	    }
+
+	    // 6. If n >= len, return -1.
+	    if (n >= len) {
+	      return -1;
+	    }
+
+	    // 7. If n >= 0, then Let k be n.
+	    // 8. Else, n<0, Let k be len - abs(n).
+	    //    If k is less than 0, then let k be 0.
+	    k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+
+	    // 9. Repeat, while k < len
+	    while (k < len) {
+	      // a. Let Pk be ToString(k).
+	      //   This is implicit for LHS operands of the in operator
+	      // b. Let kPresent be the result of calling the
+	      //    HasProperty internal method of O with argument Pk.
+	      //   This step can be combined with c
+	      // c. If kPresent is true, then
+	      //    i.  Let elementK be the result of calling the Get
+	      //        internal method of O with the argument ToString(k).
+	      //   ii.  Let same be the result of applying the
+	      //        Strict Equality Comparison Algorithm to
+	      //        searchElement and elementK.
+	      //  iii.  If same is true, return k.
+	      if (k in O && O[k] === searchElement) {
+	        return k;
+	      }
+	      k++;
+	    }
+	    return -1;
+	  };
+	}
+
+	/*END POLYFILLS*/
+
+
+	var _lc = function(str){
+		return str.toLowerCase();
+	};
+
+	//source: http://stackoverflow.com/a/10425344/1252748
+	var toCamelCase = function(input){
+
+	    return input.toLowerCase().replace(/-(.)/g, function(match, group1) {
+	        return group1.toUpperCase();
+	    });
+
+	};
+
+	var parsedStyleForCSS = function(cssString){
+	    var el = document.createElement("span");
+	    el.setAttribute("style", cssString);
+	    return el.style; // CSSStyleDeclaration object
+	};
+
+	window.onload = function(){
+		var processBtn = document.getElementById("processCSS");
+		processBtn.addEventListener("click", processCSS, false);
+	};
+
+
+	var processCSS = function(){
+		var start = new Date();
+		for(var b = 0; b < 50; b++){
+
+		var styleNode = document.getElementById("styleRules");
+		var rules = styleNode.innerHTML.replace(/[\n\s]+/gm, " ").split("}");
+
+		rules.splice(-1, 1);
+
+		var rulesObj = {}, spl, currentRuleName, currentRuleVal;
+		for (var i = 0; i < rules.length; i++){
+
+			rules[i].replace(/\n*/gm, " ");
+			rules[i] = rules[i] + "}";
+			spl = rules[i].split("{");
+			currentRuleName = spl[0];
+			currentRuleVal = spl[1];
+			rulesObj[currentRuleName] = currentRuleVal.replace("}", "");
+		}
+
+		//get list of all granular properties
+		var allProps = ["backgroundAttachment", "backgroundClip", "backgroundColor", "backgroundImage", "backgroundOrigin", "backgroundPositionX", "backgroundPositionY", "backgroundRepeatX", "backgroundRepeatY", "backgroundSize", "font", "fontFamily", "fontSize", "fontStretch", "fontStyle", "fontVariant", "fontWeight", "height", "lineHeight", "marginBottom", "marginLeft", "marginRight", "marginTop", "paddingBottom", "paddingLeft", "paddingRight", "paddingTop", "width"];
+
+		//shorthand properties to ignore when setting styles - only set longhand
+		var pseudoProps = ["cssText"];
+
+		//agnostic properties
+		pseudoProps.push("background", "backgroundPosition", "backgroundRepeat", "border", "borderImage", "borderColor", "borderBottom", "borderTop", "borderLeft", "borderRight",  "borderWidth", "borderStyle", "borderRadius", "borderSpacing","borderCollapse", "margin", "padding");
+		//moz prefixed properties
+		pseudoProps.push("MozBorderBottomColors", "MozBorderLeftColors", "MozBorderRightColors", "MozBorderTopColors", "MozBorderImage");
+		//webkit prefixed properties
+		pseudoProps.push("webkitBorderAfter","webkitBorderAfterColor","webkitBorderAfterStyle","webkitBorderAfterWidth","webkitBorderBefore","webkitBorderBeforeColor","webkitBorderBeforeStyle","webkitBorderBeforeWidth","webkitBorderEnd","webkitBorderEndColor","webkitBorderEndStyle","webkitBorderEndWidth","webkitBorderHorizontalSpacing","webkitBorderImage","webkitBorderRadius","webkitBorderStart","webkitBorderStartColor","webkitBorderStartStyle","webkitBorderStartWidth","webkitBorderVerticalSpacing");
+		//opera
+		//could not fine `o-` prefixes. seems now to be using webkit
+
+		var parsedCSSTextarea = document.getElementById("parsedCSSTextarea"),
+			parsedStyle, propsList, currentEl, cssStr = "";
+		for (var cssSelector in rulesObj){
+			cssStr += cssSelector + "{\n";
+			currentEl = document.querySelector(cssSelector);
+			parsedStyle = parsedStyleForCSS(rulesObj[cssSelector]);
+
+	/*		for (var p in parsedStyle){
+				console.log(p);
+				console.log(parsedStyle[p]);
+			}*/
+
+			for (var i = 0; i < allProps.length; i++){
+
+				if (parsedStyle[allProps[i]] && pseudoProps.indexOf(allProps[i]) < 0 && typeof parsedStyle[allProps[i]] !== "function" ){
+
+					currentEl.style[allProps[i]] = parsedStyle[allProps[i]];
+					cssStr += "\t" + allProps[i] + ": " + parsedStyle[allProps[i]] + ";\n";
+					
+				}
+
+			}
+
+			cssStr += "}\n\n";
+		}
+
+		parsedCSSTextarea.innerHTML = cssStr;
+
+	}
+
+	var end = new Date();
+
+	console.log(end - start);
+
+	}
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
